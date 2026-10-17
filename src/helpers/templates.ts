@@ -91,8 +91,14 @@ export async function bind_template(
   let cache = cachedTemplates[cacheKey];
   if (!cache) {
     let debug = false;
+    // When only the variables changed (e.g. the location hash on every navigation),
+    // keep showing the previous result until the new one arrives instead of
+    // clearing the styles in between, which made styled elements flash.
+    const rebind = Object.values(cachedTemplates).some(
+      (c) => c.template === template && c.callbacks.has(callback)
+    );
     unbind_template(callback);
-    callback("");
+    if (!rebind) callback("");
 
     if (template.includes("card_mod.debug")) {
       debug = true;
